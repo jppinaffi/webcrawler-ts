@@ -1,13 +1,13 @@
 {
   "targets": [
     {
-      "id": "rtx-4060",
-      "name": "Placa de Vídeo RTX 4060",
-      "targetPrice": 1800,
+      "id": "ryzen-5-7600",
+      "name": "Processador AMD Ryzen 5 7600",
+      "targetPrice": 950,
       "links": [
-        { "store": "kabum", "url": "https://www.kabum.com.br/produto/EXEMPLO" },
-        { "store": "pichau", "url": "https://www.pichau.com.br/EXEMPLO" },
-        { "store": "terabyte", "url": "https://www.terabyteshop.com.br/produto/EXEMPLO" }
+        { "store": "kabum", "url": "https://www.kabum.com.br/produto/405799/processador-amd-ryzen-5-7600-3-8ghz-5-1ghz-max-turbo-cache-38mb-6-nucleos-12-threads-am5-com-video-integrado-100-100001015box" },
+        { "store": "pichau", "url": "https://www.pichau.com.br/processador-amd-ryzen-5-7600-6-core-12-threads-3-8ghz-5-1ghz-turbo-cache-38mb-am5-100-100001015box" },
+        { "store": "terabyte", "url": "https://www.terabyteshop.com.br/produto/23415/processador-amd-ryzen-5-7600-38ghz-51ghz-turbo-6-cores-12-threads-am5-com-cooler-amd-wraith-stealth-100-100001015box" }
       ]
     }
   ]

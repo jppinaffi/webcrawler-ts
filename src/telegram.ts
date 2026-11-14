@@ -29,9 +29,17 @@ export async function sendTelegramMessage(text: string): Promise<void> {
   const chatId = process.env.TELEGRAM_CHAT_ID;
   if (!token || !chatId) throw new Error('TELEGRAM_BOT_TOKEN e TELEGRAM_CHAT_ID são obrigatórios');
 
-  await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
-    chat_id: chatId,
-    text,
-    parse_mode: 'HTML',
-  });
+  try {
+    await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
+      chat_id: chatId,
+      text,
+      parse_mode: 'HTML',
+    });
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      const description = error.response.data?.description ?? error.message;
+      throw new Error(`Telegram respondeu ${error.response.status}: ${description}`);
+    }
+    throw error;
+  }
 }

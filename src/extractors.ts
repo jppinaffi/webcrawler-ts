@@ -1,23 +1,20 @@
-import axios from 'axios';
+import { Impit } from 'impit';
 import * as cheerio from 'cheerio';
 import type { ScrapedProduct, Store } from './types.js';
 
-const USER_AGENT =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
-
 type ProductNode = Record<string, any>;
 
+const browserClient = new Impit({
+  browser: 'chrome',
+  timeout: 30_000,
+  followRedirects: true,
+  headers: { 'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8' },
+});
+
 async function fetchHtml(url: string): Promise<string> {
-  const response = await axios.get<string>(url, {
-    timeout: 30_000,
-    responseType: 'text',
-    headers: {
-      'User-Agent': USER_AGENT,
-      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
-    },
-  });
-  return response.data;
+  const response = await browserClient.fetch(url);
+  if (!response.ok) throw new Error(`Request failed with status code ${response.status}`);
+  return response.text();
 }
 
 async function extractKabum(url: string): Promise<ScrapedProduct> {
@@ -65,14 +62,24 @@ function parseJsonLdBlocks($: cheerio.CheerioAPI): unknown[] {
     });
 }
 
-async function extractJsonLd(url: string, store: Store): Promise<ScrapedProduct> {
-  const $ = cheerio.load(await fetchHtml(url));
+type PriceReader = (html: string, offers: ProductNode | undefined) => number;
+
+const PICHAU_CASH_PRICE_PATTERN = /\\?"pichau_prices\\?":\{\\?"avista\\?":([\d.]+)/;
+
+const readOfferPrice: PriceReader = (_html, offers) => parseFloat(String(offers?.price));
+
+const readPichauCashPrice: PriceReader = (html) =>
+  parseFloat(html.match(PICHAU_CASH_PRICE_PATTERN)?.[1] ?? '');
+
+async function extractJsonLd(url: string, store: Store, readPrice: PriceReader): Promise<ScrapedProduct> {
+  const html = await fetchHtml(url);
+  const $ = cheerio.load(html);
   const product = findProductNode(parseJsonLdBlocks($));
   if (!product) throw new Error('JSON-LD do tipo Product não encontrado');
 
   const offers = Array.isArray(product.offers) ? product.offers[0] : product.offers;
-  const price = parseFloat(String(offers?.price));
-  if (!Number.isFinite(price)) throw new Error('offers.price inválido');
+  const price = readPrice(html, offers);
+  if (!Number.isFinite(price)) throw new Error('preço à vista não encontrado');
 
   return {
     title: String(product.name),
@@ -88,7 +95,8 @@ export function extractProduct(store: Store, url: string): Promise<ScrapedProduc
     case 'kabum':
       return extractKabum(url);
     case 'pichau':
+      return extractJsonLd(url, store, readPichauCashPrice);
     case 'terabyte':
-      return extractJsonLd(url, store);
+      return extractJsonLd(url, store, readOfferPrice);
   }
 }
