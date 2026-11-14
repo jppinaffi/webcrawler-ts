@@ -1,0 +1,14 @@
+{
+  "targets": [
+    {
+      "id": "rtx-4060",
+      "name": "Placa de Vídeo RTX 4060",
+      "targetPrice": 1800,
+      "links": [
+        { "store": "kabum", "url": "https://www.kabum.com.br/produto/EXEMPLO" },
+        { "store": "pichau", "url": "https://www.pichau.com.br/EXEMPLO" },
+        { "store": "terabyte", "url": "https://www.terabyteshop.com.br/produto/EXEMPLO" }
+      ]
+    }
+  ]
+}
